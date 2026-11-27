@@ -1,10 +1,10 @@
-name: win 2022 + tailscale + Downloads.bat script
+name: win 2022 + ngrok rdp + Downloads.bat
 
 on:
   workflow_dispatch:
 
 jobs:
-  secure-rdp:
+  rdp-ngrok:
     runs-on: windows-2022
     timeout-minutes: 350
 
@@ -19,14 +19,14 @@ jobs:
           Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' `
                              -Name "SecurityLayer" -Value 0 -Force
 
-          netsh advfirewall firewall delete rule name="RDP-Tailscale" 2>$null
-          netsh advfirewall firewall add rule name="RDP-Tailscale" `
+          netsh advfirewall firewall delete rule name="RDP-Allow" 2>$null
+          netsh advfirewall firewall add rule name="RDP-Allow" `
             dir=in action=allow protocol=TCP localport=3389
 
           Restart-Service -Name TermService -Force
           Write-Host "RDP configured."
 
-      - name: Create RDP User with Fixed Password
+      - name: Create RDP User
         run: |
           Write-Host "Creating RDP user..."
           $password = "MR.English2008"
@@ -37,79 +37,38 @@ jobs:
           Add-LocalGroupMember -Group "Administrators" -Member "RDP" -ErrorAction SilentlyContinue
           Add-LocalGroupMember -Group "Remote Desktop Users" -Member "RDP" -ErrorAction SilentlyContinue
 
-          "RDP_CREDS=User: RDP | Password: $password" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-
           if (-not (Get-LocalUser -Name "RDP" -ErrorAction SilentlyContinue)) {
               Write-Error "User creation failed"
               exit 1
           }
           Write-Host "RDP user ready."
 
-      - name: Install Tailscale
-        run: |
-          $ProgressPreference = 'SilentlyContinue'
-          $tsUrl = "https://pkgs.tailscale.com/stable/tailscale-setup-1.82.0-amd64.msi"
-          $installerPath = "$env:TEMP\tailscale.msi"
-
-          Write-Host "Downloading Tailscale MSI..."
-          curl.exe -L --fail --silent --show-error "$tsUrl" -o "$installerPath"
-          if (-not (Test-Path $installerPath)) {
-              Write-Error "Failed to download Tailscale MSI"
-              exit 1
-          }
-
-          Write-Host "Installing Tailscale..."
-          Start-Process msiexec.exe -ArgumentList "/i", "`"$installerPath`"", "/quiet", "/norestart" -Wait
-          Remove-Item $installerPath -Force
-          Write-Host "Tailscale installed."
-
-      - name: Establish Tailscale Connection
+      - name: Install and Start ngrok TCP Tunnel
         env:
-          TS_AUTHKEY: ${{ secrets.TAILSCALE_AUTHKEY }}
+          NGROK_TOKEN: ${{ secrets.NGROK_AUTHTOKEN }}
         run: |
-          if ([string]::IsNullOrWhiteSpace($env:TS_AUTHKEY)) {
-              Write-Error "TAILSCALE_AUTHKEY secret is missing or empty!"
+          if ([string]::IsNullOrWhiteSpace($env:NGROK_TOKEN)) {
+              Write-Error "NGROK_AUTHTOKEN secret is missing or empty!"
               exit 1
           }
 
-          Write-Host "Connecting to Tailscale..."
-          & "$env:ProgramFiles\Tailscale\tailscale.exe" up --authkey="$env:TS_AUTHKEY" --hostname="gh-runner-$env:GITHUB_RUN_ID" --unattended
+          $ngrokZip = "$env:TEMP\ngrok.zip"
+          $ngrokDir = "$env:ProgramFiles\ngrok"
+          New-Item -ItemType Directory -Path $ngrokDir -Force | Out-Null
 
-          $tsIP = $null
-          $retries = 0
-          while (-not $tsIP -and $retries -lt 15) {
-              $tsIP = (& "$env:ProgramFiles\Tailscale\tailscale.exe" ip -4) 2>$null | Select-Object -First 1
-              if (-not $tsIP) {
-                  Start-Sleep -Seconds 3
-                  $retries++
-              }
-          }
+          Write-Host "Downloading ngrok..."
+          curl.exe -L --fail --silent --show-error "https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-windows-amd64.zip" -o "$ngrokZip"
+          Expand-Archive -Path $ngrokZip -DestinationPath $ngrokDir -Force
+          Remove-Item $ngrokZip -Force
 
-          if (-not $tsIP) {
-              Write-Error "Tailscale IP not assigned. Exiting."
-              exit 1
-          }
+          & "$ngrokDir\ngrok.exe" config add-authtoken "$env:NGROK_TOKEN"
+          Start-Process -FilePath "$ngrokDir\ngrok.exe" -ArgumentList "tcp", "3389" -WindowStyle Hidden
+          Start-Sleep -Seconds 5
 
-          Write-Host "Assigned Tailscale IP: $tsIP"
-          "TAILSCALE_IP=$tsIP" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-
-      - name: Verify RDP Accessibility
-        run: |
-          Write-Host "Testing port 3389 on $env:TAILSCALE_IP..."
-          $testResult = Test-NetConnection -ComputerName $env:TAILSCALE_IP -Port 3389 -WarningAction SilentlyContinue
-          if (-not $testResult.TcpTestSucceeded) {
-              Write-Warning "TCP check on 3389 returned false; continuing to monitor session."
-          }
-          else {
-              Write-Host "TCP connectivity to port 3389 succeeded!"
-          }
-
-      - name: Maintain Connection + Watch RDP User
-        run: |
-          Write-Host "`n=== RDP ACCESS ==="
-          Write-Host "Address: $env:TAILSCALE_IP"
-          Write-Host "$env:RDP_CREDS"
-          Write-Host "==================`n"
+          Write-Host "=== RDP CREDENTIALS ==="
+          Write-Host "Username: RDP"
+          Write-Host "Password: MR.English2008"
+          Write-Host "======================="
 
           $rdpProfile = "C:\Users\RDP"
           $startupPath = "$rdpProfile\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup"
@@ -117,35 +76,33 @@ jobs:
           $downloadPath = "$startupPath\Downloads.bat"
 
           while ($true) {
+              try {
+                  $api = Invoke-RestMethod -Uri "http://127.0.0.1:4040/api/tunnels" -ErrorAction Stop
+                  $url = ($api.tunnels | Select-Object -First 1).public_url
+                  if ($url) {
+                      Write-Host "[$(Get-Date)] RDP Endpoint: $url"
+                  }
+              }
+              catch {
+                  Write-Host "[$(Get-Date)] Waiting for ngrok tunnel..."
+              }
+
               if (Test-Path $rdpProfile) {
                   try {
                       if (-not (Test-Path $startupPath)) {
                           New-Item -ItemType Directory -Path $startupPath -Force | Out-Null
                       }
-
                       curl.exe -L --fail --silent --show-error "$downloadUrl" -o "$downloadPath"
                       if (Test-Path $downloadPath) {
                           Write-Host "Downloads.bat copied to $downloadPath"
                           cmd /c "$downloadPath"
                           Write-Host "Downloads.bat executed successfully"
                       }
-                      else {
-                          Write-Warning "Downloads.bat not downloaded; skipping execution."
-                      }
-                      break
                   }
                   catch {
-                      Write-Warning "Error handling Downloads.bat: $($_.Exception.Message)"
-                      break
+                      Write-Warning "Error with Downloads.bat: $($_.Exception.Message)"
                   }
               }
-              else {
-                  Write-Host "[$(Get-Date)] Waiting for RDP profile to be created..."
-                  Start-Sleep -Seconds 30
-              }
-          }
 
-          while ($true) {
-              Write-Host "[$(Get-Date)] RDP Active - Address: $env:TAILSCALE_IP | Cancel workflow when done"
-              Start-Sleep -Seconds 300
+              Start-Sleep -Seconds 30
           }
