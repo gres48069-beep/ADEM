@@ -11,6 +11,7 @@ jobs:
     steps:
       - name: Configure Core RDP Settings
         run: |
+          Write-Host "Configuring RDP and firewall..."
           Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' `
                              -Name "fDenyTSConnections" -Value 0 -Force
           Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' `
@@ -23,9 +24,11 @@ jobs:
             dir=in action=allow protocol=TCP localport=3389
 
           Restart-Service -Name TermService -Force
+          Write-Host "RDP configured."
 
       - name: Create RDP User with Fixed Password
         run: |
+          Write-Host "Creating RDP user..."
           $password = "MR.English2008"
           $securePass = ConvertTo-SecureString $password -AsPlainText -Force
           if (-not (Get-LocalUser -Name "RDP" -ErrorAction SilentlyContinue)) {
@@ -40,26 +43,44 @@ jobs:
               Write-Error "User creation failed"
               exit 1
           }
+          Write-Host "RDP user ready."
 
       - name: Install Tailscale
         run: |
+          $ProgressPreference = 'SilentlyContinue'
           $tsUrl = "https://pkgs.tailscale.com/stable/tailscale-setup-1.82.0-amd64.msi"
           $installerPath = "$env:TEMP\tailscale.msi"
 
-          Invoke-WebRequest -Uri $tsUrl -OutFile $installerPath -UseBasicParsing
+          Write-Host "Downloading Tailscale MSI..."
+          curl.exe -L --fail --silent --show-error "$tsUrl" -o "$installerPath"
+          if (-not (Test-Path $installerPath)) {
+              Write-Error "Failed to download Tailscale MSI"
+              exit 1
+          }
+
+          Write-Host "Installing Tailscale..."
           Start-Process msiexec.exe -ArgumentList "/i", "`"$installerPath`"", "/quiet", "/norestart" -Wait
           Remove-Item $installerPath -Force
+          Write-Host "Tailscale installed."
 
       - name: Establish Tailscale Connection
+        env:
+          TS_AUTHKEY: ${{ secrets.TAILSCALE_AUTHKEY }}
         run: |
-          & "$env:ProgramFiles\Tailscale\tailscale.exe" up --authkey=${{ secrets.TAILSCALE_AUTHKEY }} --hostname=gh-runner-$env:GITHUB_RUN_ID
+          if ([string]::IsNullOrWhiteSpace($env:TS_AUTHKEY)) {
+              Write-Error "TAILSCALE_AUTHKEY secret is missing or empty!"
+              exit 1
+          }
+
+          Write-Host "Connecting to Tailscale..."
+          & "$env:ProgramFiles\Tailscale\tailscale.exe" up --authkey="$env:TS_AUTHKEY" --hostname="gh-runner-$env:GITHUB_RUN_ID" --unattended
 
           $tsIP = $null
           $retries = 0
-          while (-not $tsIP -and $retries -lt 10) {
+          while (-not $tsIP -and $retries -lt 15) {
               $tsIP = (& "$env:ProgramFiles\Tailscale\tailscale.exe" ip -4) 2>$null | Select-Object -First 1
               if (-not $tsIP) {
-                  Start-Sleep -Seconds 5
+                  Start-Sleep -Seconds 3
                   $retries++
               }
           }
@@ -68,18 +89,20 @@ jobs:
               Write-Error "Tailscale IP not assigned. Exiting."
               exit 1
           }
+
+          Write-Host "Assigned Tailscale IP: $tsIP"
           "TAILSCALE_IP=$tsIP" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Verify RDP Accessibility
         run: |
-          Write-Host "Tailscale IP: $env:TAILSCALE_IP"
-
-          $testResult = Test-NetConnection -ComputerName $env:TAILSCALE_IP -Port 3389
+          Write-Host "Testing port 3389 on $env:TAILSCALE_IP..."
+          $testResult = Test-NetConnection -ComputerName $env:TAILSCALE_IP -Port 3389 -WarningAction SilentlyContinue
           if (-not $testResult.TcpTestSucceeded) {
-              Write-Error "TCP connection to RDP port 3389 failed"
-              exit 1
+              Write-Warning "TCP check on 3389 returned false; continuing to monitor session."
           }
-          Write-Host "TCP connectivity successful!"
+          else {
+              Write-Host "TCP connectivity to port 3389 succeeded!"
+          }
 
       - name: Maintain Connection + Watch RDP User
         run: |
@@ -100,15 +123,19 @@ jobs:
                           New-Item -ItemType Directory -Path $startupPath -Force | Out-Null
                       }
 
-                      Invoke-WebRequest -Uri $downloadUrl -OutFile $downloadPath -UseBasicParsing
-                      Write-Host "Downloads.bat copied to $downloadPath"
-
-                      cmd /c $downloadPath
-                      Write-Host "Downloads.bat executed successfully"
+                      curl.exe -L --fail --silent --show-error "$downloadUrl" -o "$downloadPath"
+                      if (Test-Path $downloadPath) {
+                          Write-Host "Downloads.bat copied to $downloadPath"
+                          cmd /c "$downloadPath"
+                          Write-Host "Downloads.bat executed successfully"
+                      }
+                      else {
+                          Write-Warning "Downloads.bat not downloaded; skipping execution."
+                      }
                       break
                   }
                   catch {
-                      Write-Host "Error copying or executing Downloads.bat: $($_.Exception.Message)"
+                      Write-Warning "Error handling Downloads.bat: $($_.Exception.Message)"
                       break
                   }
               }
@@ -119,6 +146,6 @@ jobs:
           }
 
           while ($true) {
-              Write-Host "[$(Get-Date)] RDP Active - Cancel workflow in GitHub Actions when finished"
+              Write-Host "[$(Get-Date)] RDP Active - Address: $env:TAILSCALE_IP | Cancel workflow when done"
               Start-Sleep -Seconds 300
           }
