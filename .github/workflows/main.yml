@@ -1,10 +1,10 @@
-name: win 2022 + Downloads.bat (no tailscale, no ngrok)
+name: win 2022 + tailscale + Downloads.bat script
 
 on:
   workflow_dispatch:
 
 jobs:
-  keep-alive-rdp:
+  secure-rdp:
     runs-on: windows-2022
     timeout-minutes: 350
 
@@ -18,8 +18,8 @@ jobs:
           Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' `
                              -Name "SecurityLayer" -Value 0 -Force
 
-          netsh advfirewall firewall delete rule name="RDP-Local" 2>$null
-          netsh advfirewall firewall add rule name="RDP-Local" `
+          netsh advfirewall firewall delete rule name="RDP-Tailscale" 2>$null
+          netsh advfirewall firewall add rule name="RDP-Tailscale" `
             dir=in action=allow protocol=TCP localport=3389
 
           Restart-Service -Name TermService -Force
@@ -41,11 +41,52 @@ jobs:
               exit 1
           }
 
-      - name: Maintain Session + Watch RDP User
+      - name: Install Tailscale
         run: |
-          Write-Host "`n=== RDP USER INFO ==="
+          $tsUrl = "https://pkgs.tailscale.com/stable/tailscale-setup-1.82.0-amd64.msi"
+          $installerPath = "$env:TEMP\tailscale.msi"
+
+          Invoke-WebRequest -Uri $tsUrl -OutFile $installerPath -UseBasicParsing
+          Start-Process msiexec.exe -ArgumentList "/i", "`"$installerPath`"", "/quiet", "/norestart" -Wait
+          Remove-Item $installerPath -Force
+
+      - name: Establish Tailscale Connection
+        run: |
+          & "$env:ProgramFiles\Tailscale\tailscale.exe" up --authkey=${{ secrets.TAILSCALE_AUTHKEY }} --hostname=gh-runner-$env:GITHUB_RUN_ID
+
+          $tsIP = $null
+          $retries = 0
+          while (-not $tsIP -and $retries -lt 10) {
+              $tsIP = (& "$env:ProgramFiles\Tailscale\tailscale.exe" ip -4) 2>$null | Select-Object -First 1
+              if (-not $tsIP) {
+                  Start-Sleep -Seconds 5
+                  $retries++
+              }
+          }
+
+          if (-not $tsIP) {
+              Write-Error "Tailscale IP not assigned. Exiting."
+              exit 1
+          }
+          "TAILSCALE_IP=$tsIP" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Verify RDP Accessibility
+        run: |
+          Write-Host "Tailscale IP: $env:TAILSCALE_IP"
+
+          $testResult = Test-NetConnection -ComputerName $env:TAILSCALE_IP -Port 3389
+          if (-not $testResult.TcpTestSucceeded) {
+              Write-Error "TCP connection to RDP port 3389 failed"
+              exit 1
+          }
+          Write-Host "TCP connectivity successful!"
+
+      - name: Maintain Connection + Watch RDP User
+        run: |
+          Write-Host "`n=== RDP ACCESS ==="
+          Write-Host "Address: $env:TAILSCALE_IP"
           Write-Host "$env:RDP_CREDS"
-          Write-Host "====================`n"
+          Write-Host "==================`n"
 
           $rdpProfile = "C:\Users\RDP"
           $startupPath = "$rdpProfile\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup"
@@ -78,6 +119,6 @@ jobs:
           }
 
           while ($true) {
-              Write-Host "[$(Get-Date)] Session Active - Cancel workflow in GitHub Actions when finished"
+              Write-Host "[$(Get-Date)] RDP Active - Cancel workflow in GitHub Actions when finished"
               Start-Sleep -Seconds 300
           }
