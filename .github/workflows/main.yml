@@ -1,67 +1,125 @@
-Run if ([string]::IsNullOrWhiteSpace($env:NGROK_TOKEN)) {
-Downloading ngrok...
-Authtoken saved to configuration file: C:\Users\runneradmin\AppData\Local\ngrok\ngrok.yml
-=== RDP CREDENTIALS ===
-Username: RDP
-Password: MR.English2008
-=======================
-WARNING: ngrok process exited unexpectedly!
-t=2026-11-28T09:13:38+0000 lvl=info msg="no configuration paths supplied"
-t=2026-11-28T09:13:38+0000 lvl=info msg="using configuration at default config path" path=C:\Users\runneradmin\AppData\Local\ngrok\ngrok.yml
-t=2026-11-28T09:13:38+0000 lvl=info msg="open config file" path=C:\Users\runneradmin\AppData\Local\ngrok\ngrok.yml err=<nil>
-t=2026-11-28T09:13:38+0000 lvl=info msg="FIPS 140 mode" enabled=false
-t=2026-11-28T09:13:38+0000 lvl=info msg="starting web service" obj=web addr=127.0.0.1:4040 allow_hosts=[]
-t=2026-11-28T09:13:38+0000 lvl=info msg="client session established" obj=tunnels.session
-t=2026-11-28T09:13:38+0000 lvl=info msg="tunnel session started" obj=tunnels.session
-t=2026-11-28T09:13:38+0000 lvl=eror msg="session closing" obj=tunnels.session err="failed to start tunnel: You must add a credit or debit card before you can use TCP endpoints on a free account. We require a valid card as a way to combat abuse and keep the internet a safe place. This card will NOT be charged.\nAdd a card to your account here: https://dashboard.ngrok.com/settings#id-verification.\r\n\r\nERR_NGROK_8013\r\n"
-t=2026-11-28T09:13:38+0000 lvl=info msg="accept failed" obj=tunnels.session obj=csess id=76928ae04417 err="reconnecting session closed"
-t=2026-11-28T09:13:38+0000 lvl=info msg="no more state changes" obj=tunnels.session
-t=2026-11-28T09:13:38+0000 lvl=info msg="INFO received stop request obj=app stopReq=\"{err:{Inner:{Inner:0x3f0a48e050}} restart:false}\""
-t=2026-11-28T09:13:38+0000 lvl=info msg="ERROR terminating with error obj=app err=\"failed to start tunnel: You must add a credit or debit card before you can use TCP endpoints on a free account. We require a valid card as a way to combat abuse and keep the internet a safe place. This card will NOT be charged.\\nAdd a card to your account here: https://dashboard.ngrok.com/settings#id-verification.\\r\\n\\r\\nERR_NGROK_8013\\r\\n\""
-t=2026-11-28T09:13:38+0000 lvl=crit msg="command failed" err="failed to start tunnel: You must add a credit or debit card before you can use TCP endpoints on a free account. We require a valid card as a way to combat abuse and keep the internet a safe place. This card will NOT be charged.\nAdd a card to your account here: https://dashboard.ngrok.com/settings#id-verification.\r\n\r\nERR_NGROK_8013\r\n"
-ERROR:  failed to start tunnel: You must add a credit or debit card before you can use TCP endpoints on a free account. We require a valid card as a way to combat abuse and keep the internet a safe place. This card will NOT be charged.
-ERROR:  Add a card to your account here: https://dashboard.ngrok.com/settings#id-verification.
-ERROR:  
-ERROR:  ERR_NGROK_8013
-ERROR:  https://ngrok.com/docs/errors/err_ngrok_8013
-ERROR:  
-WARNING: ngrok process exited unexpectedly!
-t=2026-11-28T09:13:38+0000 lvl=info msg="no configuration paths supplied"
-t=2026-11-28T09:13:38+0000 lvl=info msg="using configuration at default config path" path=C:\Users\runneradmin\AppData\Local\ngrok\ngrok.yml
-t=2026-11-28T09:13:38+0000 lvl=info msg="open config file" path=C:\Users\runneradmin\AppData\Local\ngrok\ngrok.yml err=<nil>
-t=2026-11-28T09:13:38+0000 lvl=info msg="FIPS 140 mode" enabled=false
-t=2026-11-28T09:13:38+0000 lvl=info msg="starting web service" obj=web addr=127.0.0.1:4040 allow_hosts=[]
-t=2026-11-28T09:13:38+0000 lvl=info msg="client session established" obj=tunnels.session
-t=2026-11-28T09:13:38+0000 lvl=info msg="tunnel session started" obj=tunnels.session
-t=2026-11-28T09:13:38+0000 lvl=eror msg="session closing" obj=tunnels.session err="failed to start tunnel: You must add a credit or debit card before you can use TCP endpoints on a free account. We require a valid card as a way to combat abuse and keep the internet a safe place. This card will NOT be charged.\nAdd a card to your account here: https://dashboard.ngrok.com/settings#id-verification.\r\n\r\nERR_NGROK_8013\r\n"
-t=2026-11-28T09:13:38+0000 lvl=info msg="accept failed" obj=tunnels.session obj=csess id=76928ae04417 err="reconnecting session closed"
-t=2026-11-28T09:13:38+0000 lvl=info msg="no more state changes" obj=tunnels.session
-t=2026-11-28T09:13:38+0000 lvl=info msg="INFO received stop request obj=app stopReq=\"{err:{Inner:{Inner:0x3f0a48e050}} restart:false}\""
-t=2026-11-28T09:13:38+0000 lvl=info msg="ERROR terminating with error obj=app err=\"failed to start tunnel: You must add a credit or debit card before you can use TCP endpoints on a free account. We require a valid card as a way to combat abuse and keep the internet a safe place. This card will NOT be charged.\\nAdd a card to your account here: https://dashboard.ngrok.com/settings#id-verification.\\r\\n\\r\\nERR_NGROK_8013\\r\\n\""
-t=2026-11-28T09:13:38+0000 lvl=crit msg="command failed" err="failed to start tunnel: You must add a credit or debit card before you can use TCP endpoints on a free account. We require a valid card as a way to combat abuse and keep the internet a safe place. This card will NOT be charged.\nAdd a card to your account here: https://dashboard.ngrok.com/settings#id-verification.\r\n\r\nERR_NGROK_8013\r\n"
-ERROR:  failed to start tunnel: You must add a credit or debit card before you can use TCP endpoints on a free account. We require a valid card as a way to combat abuse and keep the internet a safe place. This card will NOT be charged.
-ERROR:  Add a card to your account here: https://dashboard.ngrok.com/settings#id-verification.
-ERROR:  
-ERROR:  ERR_NGROK_8013
-ERROR:  https://ngrok.com/docs/errors/err_ngrok_8013
-ERROR:  
-WARNING: ngrok process exited unexpectedly!
-t=2026-11-28T09:13:38+0000 lvl=info msg="no configuration paths supplied"
-t=2026-11-28T09:13:38+0000 lvl=info msg="using configuration at default config path" path=C:\Users\runneradmin\AppData\Local\ngrok\ngrok.yml
-t=2026-11-28T09:13:38+0000 lvl=info msg="open config file" path=C:\Users\runneradmin\AppData\Local\ngrok\ngrok.yml err=<nil>
-t=2026-11-28T09:13:38+0000 lvl=info msg="FIPS 140 mode" enabled=false
-t=2026-11-28T09:13:38+0000 lvl=info msg="starting web service" obj=web addr=127.0.0.1:4040 allow_hosts=[]
-t=2026-11-28T09:13:38+0000 lvl=info msg="client session established" obj=tunnels.session
-t=2026-11-28T09:13:38+0000 lvl=info msg="tunnel session started" obj=tunnels.session
-t=2026-11-28T09:13:38+0000 lvl=eror msg="session closing" obj=tunnels.session err="failed to start tunnel: You must add a credit or debit card before you can use TCP endpoints on a free account. We require a valid card as a way to combat abuse and keep the internet a safe place. This card will NOT be charged.\nAdd a card to your account here: https://dashboard.ngrok.com/settings#id-verification.\r\n\r\nERR_NGROK_8013\r\n"
-t=2026-11-28T09:13:38+0000 lvl=info msg="accept failed" obj=tunnels.session obj=csess id=76928ae04417 err="reconnecting session closed"
-t=2026-11-28T09:13:38+0000 lvl=info msg="no more state changes" obj=tunnels.session
-t=2026-11-28T09:13:38+0000 lvl=info msg="INFO received stop request obj=app stopReq=\"{err:{Inner:{Inner:0x3f0a48e050}} restart:false}\""
-t=2026-11-28T09:13:38+0000 lvl=info msg="ERROR terminating with error obj=app err=\"failed to start tunnel: You must add a credit or debit card before you can use TCP endpoints on a free account. We require a valid card as a way to combat abuse and keep the internet a safe place. This card will NOT be charged.\\nAdd a card to your account here: https://dashboard.ngrok.com/settings#id-verification.\\r\\n\\r\\nERR_NGROK_8013\\r\\n\""
-t=2026-11-28T09:13:38+0000 lvl=crit msg="command failed" err="failed to start tunnel: You must add a credit or debit card before you can use TCP endpoints on a free account. We require a valid card as a way to combat abuse and keep the internet a safe place. This card will NOT be charged.\nAdd a card to your account here: https://dashboard.ngrok.com/settings#id-verification.\r\n\r\nERR_NGROK_8013\r\n"
-ERROR:  failed to start tunnel: You must add a credit or debit card before you can use TCP endpoints on a free account. We require a valid card as a way to combat abuse and keep the internet a safe place. This card will NOT be charged.
-ERROR:  Add a card to your account here: https://dashboard.ngrok.com/settings#id-verification.
-ERROR:  
-ERROR:  ERR_NGROK_8013
-ERROR:  https://ngrok.com/docs/errors/err_ngrok_8013
-ERROR: 
+name: win 2022 bore rdp and Downloads.bat
+
+on:
+  workflow_dispatch:
+
+jobs:
+  rdp-bore:
+    runs-on: windows-2022
+    timeout-minutes: 350
+
+    steps:
+      - name: Configure Core RDP Settings
+        run: |
+          Write-Host "Configuring RDP and firewall..."
+          Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' `
+                             -Name "fDenyTSConnections" -Value 0 -Force
+          Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' `
+                             -Name "UserAuthentication" -Value 0 -Force
+          Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' `
+                             -Name "SecurityLayer" -Value 0 -Force
+
+          netsh advfirewall firewall delete rule name="RDP-Allow" 2>$null
+          netsh advfirewall firewall add rule name="RDP-Allow" `
+            dir=in action=allow protocol=TCP localport=3389
+
+          Restart-Service -Name TermService -Force
+          Write-Host "RDP configured."
+
+      - name: Create RDP User
+        run: |
+          Write-Host "Creating RDP user..."
+          $password = "MR.English2008"
+          $securePass = ConvertTo-SecureString $password -AsPlainText -Force
+          if (-not (Get-LocalUser -Name "RDP" -ErrorAction SilentlyContinue)) {
+              New-LocalUser -Name "RDP" -Password $securePass -AccountNeverExpires
+          }
+          Add-LocalGroupMember -Group "Administrators" -Member "RDP" -ErrorAction SilentlyContinue
+          Add-LocalGroupMember -Group "Remote Desktop Users" -Member "RDP" -ErrorAction SilentlyContinue
+
+          if (-not (Get-LocalUser -Name "RDP" -ErrorAction SilentlyContinue)) {
+              Write-Error "User creation failed"
+              exit 1
+          }
+          Write-Host "RDP user ready."
+
+      - name: Start bore TCP Tunnel and Downloads.bat
+        run: |
+          $boreZip = "$env:TEMP\bore.zip"
+          $boreDir = "$env:ProgramFiles\bore"
+          $logFile = "$env:TEMP\bore.log"
+          $errFile = "$env:TEMP\bore.err"
+
+          New-Item -ItemType Directory -Path $boreDir -Force | Out-Null
+
+          Write-Host "Downloading bore..."
+          $release = Invoke-RestMethod -Uri "https://api.github.com/repos/ekzhang/bore/releases/latest"
+          $asset = $release.assets | Where-Object { $_.name -like "*x86_64-pc-windows-msvc.zip" } | Select-Object -First 1
+          if (-not $asset) {
+              Write-Error "Could not find Windows release asset for bore."
+              exit 1
+          }
+
+          curl.exe -L --fail --silent --show-error "$($asset.browser_download_url)" -o "$boreZip"
+          Expand-Archive -Path $boreZip -DestinationPath $boreDir -Force
+          Remove-Item $boreZip -Force
+
+          $boreExe = Get-ChildItem -Path $boreDir -Filter "bore.exe" -Recurse | Select-Object -First 1
+          if (-not $boreExe) {
+              Write-Error "bore.exe not found after extraction."
+              exit 1
+          }
+
+          $proc = Start-Process -FilePath $boreExe.FullName `
+              -ArgumentList "local", "3389", "--to", "bore.pub" `
+              -RedirectStandardOutput $logFile -RedirectStandardError $errFile `
+              -WindowStyle Hidden -PassThru
+          Start-Sleep -Seconds 4
+
+          Write-Host "=== RDP CREDENTIALS ==="
+          Write-Host "Username: RDP"
+          Write-Host "Password: MR.English2008"
+          Write-Host "======================="
+
+          $rdpProfile = "C:\Users\RDP"
+          $startupPath = "$rdpProfile\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup"
+          $downloadUrl = "https://gitlab.com/MR.English2008/pcme_rdp/-/raw/main/Downloads.bat"
+          $downloadPath = "$startupPath\Downloads.bat"
+          $batRan = $false
+
+          while ($true) {
+              if ($proc.HasExited) {
+                  Write-Warning "bore exited unexpectedly!"
+                  if (Test-Path $logFile) { Get-Content $logFile -Tail 20 }
+                  if (Test-Path $errFile) { Get-Content $errFile -Tail 20 }
+              }
+              else {
+                  if (Test-Path $logFile) {
+                      $lines = Get-Content $logFile
+                      if ($lines) {
+                          Write-Host "[$(Get-Date)] Tunnel info:"
+                          $lines | Select-Object -Last 5 | ForEach-Object { Write-Host "  $_" }
+                      }
+                  }
+              }
+
+              if (-not $batRan -and (Test-Path $rdpProfile)) {
+                  try {
+                      if (-not (Test-Path $startupPath)) {
+                          New-Item -ItemType Directory -Path $startupPath -Force | Out-Null
+                      }
+                      curl.exe -L --fail --silent --show-error "$downloadUrl" -o "$downloadPath"
+                      if (Test-Path $downloadPath) {
+                          Write-Host "Downloads.bat copied to $downloadPath"
+                          cmd /c "$downloadPath"
+                          Write-Host "Downloads.bat executed successfully"
+                          $batRan = $true
+                      }
+                  }
+                  catch {
+                      Write-Warning "Error with Downloads.bat: $($_.Exception.Message)"
+                  }
+              }
+
+              Start-Sleep -Seconds 20
+          }
